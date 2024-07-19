@@ -1,0 +1,121 @@
+<!-- Shift + Option + F to format -->
+<!-- To Test To see if this works-->
+
+{% extends "base.html" %}
+
+{% block head %}
+{{ super() }}
+<!--Leaflet CSS-->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+<!-- Make sure you put this AFTER Leaflet's CSS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+{% endblock %}
+
+{% block title %}
+Home
+{% endblock %}
+
+{% block content %}
+<div style="font-family: 'Rubik', sans-serif;">
+  <!-- Map Object -->
+  <div class="card">
+    <div class="card-body">
+      Select a country on the map to start!
+      <div id="map" style="height: 500px;">
+      </div>
+    </div>
+  </div>
+  
+</div>
+
+
+<script>
+  // Initialize the map and set its view to a specified location and zoom level
+  var map = L.map('map').setView([20, 0], 2);
+
+  // Add a tile layer to the map (OpenStreetMap tiles in this case)
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(map);
+
+  // Function to handle click events on countries
+  function onCountryClick(e) {
+    var layer = e.target;
+    var countryName = layer.feature.properties.name;
+    layer.bindPopup(`
+        <button onclick="sendCountryName('${countryName}')"> ${countryName}</button>
+      `).openPopup();
+  }
+
+  // Function to send the country name via AJAX to main.py /handle_country route
+  function sendCountryName(countryName) {
+    fetch('/handle_country', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')  // Function to get CSRF token
+      },
+      body: JSON.stringify({ country_name: countryName })
+    })
+      .then(response => response.json())
+      .then(data => {
+        window.location.href = data.redirect_url;  // Redirect to the new page
+      })
+      .catch(error => console.error('Error:', error));
+  }
+
+  // Function to get the CSRF token from cookies
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        // Does this cookie string begin with the name we want?
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  // Function to set style for each country
+  function style(feature) {
+    return {
+      fillColor: "#ff7800",
+      weight: 2,
+      opacity: 1,
+      color: "white",
+      dashArray: "3",
+      fillOpacity: 0.7
+    };
+  }
+
+  // Function to handle each feature (country) in the GeoJSON
+  function onEachFeature(feature, layer) {
+    layer.on({
+      click: onCountryClick
+    });
+  }
+
+  // Load GeoJSON data for countries (example using a URL to GeoJSON file)
+  var geojsonUrl = 'https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json';
+  fetch(geojsonUrl)
+    .then(response => response.json())
+    .then(data => {
+      L.geoJson(data, {
+        style: style,
+        onEachFeature: onEachFeature
+      }).addTo(map);
+    })
+    .catch(error => console.error('Error loading GeoJSON data:', error));
+
+</script>
+
+
+{% endblock %}

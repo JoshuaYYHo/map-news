@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block head %}
+{{ super() }}
+
+{% endblock %}
+
+{% block title %}
+{{ country_name }}
+{% endblock %}
+
+{% block content %}
+
+<div style="font-family: 'Rubik', sans-serif;">
+  <!-- Put the Country Emoji in -->
+  <h1 style="text-align: center;"> {{ country_name }} </h1>
+
+  <!--Back Link Required For the Free Plan-->
+  <h3 style="text-align: center;"> <a href="https://worldnewsapi.com/">World News API<a> </h3>
+
+  <div style="width:75%; float:left;">
+    {% if country_news|length == 0 %}
+    <h2> No news today :( </h2>
+    {% else %}
+    <div class="container">
+      <div class="row">
+        {% for article in country_news %}
+        <div class="col-md-4 mb-4">
+          <div class="card">
+            <img src="{{ article[4] }}" class="card-img-top" alt="...">
+            <div class="card-body">
+              <h5 class="card-title">{{ article[0] }}</h5>
+              <h6 class="card-subtitle mb-2 text-muted"> {{ article[1] }} </h6>
+              <p class="card-text"> {{ article[2] }} </p>
+              <a href="{% if article[3].startswith('http') %}{{ article[3] }}{% else %}{{ url_for(article[3]) }}{% endif %}"
+                class="btn btn-success"> Go To Article </a>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    {% endif %}
+  </div>
+
+
+  <div style="width:25%; float:right;">
+    <div class="col-md-4">
+
+      <!--Quick Facts-->
+      <div class="card" style="width: 18rem;">
+        <div class="card-header">
+          Quick Facts
+        </div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item"> Capital: {{ info[0] }} </li>
+          <li class="list-group-item"> Languages:
+            <ul>
+              {% for lang in info[1] %} <li> {{ lang }} </li> {% endfor %}
+            </ul>
+          </li>
+          <li class="list-group-item"> Borders:
+            <ul>
+              {% for border in info[2] %} <li> {{ border }} </li> {% endfor %}
+            </ul>
+          </li>
+          <li class="list-group-item"> Provinces:
+            <ul>
+              {% for province in info[3] %} <li> {{ province }} </li> {% endfor %}
+            </ul>
+          </li>
+          <li class="list-group-item"> Area: {{ info[4] }} </li>
+          <li class="list-group-item"> Calling Codes:
+            <ul>
+              {% for code in info[5] %} <li> {{ code }} </li> {% endfor %}
+            </ul>
+          </li>
+          <li class="list-group-item"> Population: {{ info[6] }} </li>
+        </ul>
+      </div>
+
+      <!-- Padding to separate -->
+      <br>
+
+      <!--Explore other countries-->
+      <div class="card" style="width: 18rem;">
+        <div class="card-header">
+          Other Countries
+        </div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item"> Country 1 </li>
+          <li class="list-group-item"> Country 2 </li>
+          <li class="list-group-item"> Country 3 </li>
+        </ul>
+      </div>
+
+      <!-- Padding to separate -->
+    <br>
+
+    <div class="card" style="width: 18rem;">
+      <div class="card-body">
+        Possible Ad
+      </div>
+    </div>
+    </div>
+
+    
+
+
+  </div>
+
+</div>
+
+
+
+{% endblock %}
